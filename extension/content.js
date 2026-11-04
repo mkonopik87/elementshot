@@ -101,7 +101,12 @@
         canvas.width = Math.ceil(area.w*scale); canvas.height = Math.ceil(area.h*scale);
         const ctx = canvas.getContext('2d');
         document.documentElement.append(style);
+        selected = false;
+        box.hidden = true;
+        actions.hidden = true;
+        $('.panel').hidden = true;
         host.style.visibility = 'hidden';
+        await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
         for (let y = area.y; y < area.y + area.h; y += innerHeight) {
           for (let x = area.x; x < area.x + area.w; x += innerWidth) {
             if (cancelled) throw new Error('Capture cancelled.');
@@ -130,7 +135,7 @@
         preview.hidden = false; actions.hidden = true; $('.panel').hidden = true;
       }
     } catch(e) { error(e.message); }
-    finally {window.scrollTo(origin.x,origin.y);style.remove();host.style.visibility='';busy=false;root.querySelectorAll('button').forEach(b=>b.disabled=false);}
+    finally {window.scrollTo(origin.x,origin.y);style.remove();host.style.visibility='';if(preview.hidden){render();$('.panel').hidden=false;}else{box.hidden=true;actions.hidden=true;$('.panel').hidden=true;}busy=false;root.querySelectorAll('button').forEach(b=>b.disabled=false);}
   }
   root.addEventListener('click', e => {
     const action = e.target.closest('button')?.dataset.a;
@@ -139,6 +144,9 @@
     else if (action === 'reset') reset();
     else if (action === 'full' || action === 'visible') {
       blob = null;
+      selected = false;
+      box.hidden = true;
+      actions.hidden = true;
       rect = action === 'full' ? {x:0,y:0,w:document.documentElement.scrollWidth,h:document.documentElement.scrollHeight} : {x:scrollX,y:scrollY,w:innerWidth,h:innerHeight};
       capture('preview');
     } else capture(action);
